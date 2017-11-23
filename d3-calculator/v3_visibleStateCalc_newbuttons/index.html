@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 1.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 0.1px;
+}
+
+</style>
+<svg width="7000" height="4800"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+var jsonIcons = [
+  {"type" : "clear", "x_axis": 20, "y_axis": 5, "size": 120, "value" : "c", "img" :  "buttonClear" },
+
+  {"type" : "num", "x_axis": 20, "y_axis": 90, "size":   52, "value" : "7", "img" :    "button7"},
+  {"type" : "num", "x_axis": 80, "y_axis": 90, "size":   52, "value" : "8", "img" :    "button8"},
+  {"type" : "num", "x_axis": 140, "y_axis": 90, "size":  52, "value" : "9", "img" :   "button9"},
+  {"type" : "num", "x_axis": 20, "y_axis": 150, "size":   52, "value" : "4", "img" :    "button4"},
+  {"type" : "num", "x_axis": 80, "y_axis": 150, "size":   52, "value" : "5", "img" :    "button5"},
+  {"type" : "num", "x_axis": 140, "y_axis": 150, "size":  52, "value" : "6", "img" :   "button6"},
+  {"type" : "num", "x_axis": 20, "y_axis": 210, "size":  52, "value" : "1", "img" :   "button1"},
+  {"type" : "num", "x_axis": 80, "y_axis": 210, "size":  52, "value" : "2", "img" :   "button2"},
+  {"type" : "num", "x_axis": 140, "y_axis": 210, "size": 52, "value" : "3", "img" :  "button3"},
+
+  {"type" : "num", "x_axis": 20, "y_axis":  270, "size":  52, "value" : "0", "img" :   "button0" },
+  {"type" : "eq", "x_axis": 140, "y_axis":  270, "size":  52, "value" : "=", "img" :   "buttonEqual"  },
+
+  {"type" : "op", "x_axis": 210, "y_axis": 90, "size":  52, "value" : "/", "img" :  "buttonDivide"  },
+  {"type" : "op", "x_axis": 210, "y_axis": 150, "size":  52, "value" : "*", "img" :  "buttonMult" },
+  {"type" : "op", "x_axis": 210, "y_axis": 210, "size": 52, "value" : "-", "img" : "buttonMinus" }, 
+  {"type" : "op", "x_axis": 210, "y_axis": 270, "size": 52, "value" : "+", "img" : "buttonPlus"} ];
+
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+svg.append("rect")
+   .attr("width", "100%")
+   .attr("height", "100%")
+   .attr("fill", "#FFFFFF");
+
+var circleGrid_yoffset = 100;
+var left_offset = 100;
+
+var rect = svg.append("svg:image")
+							.attr("x", left_offset)
+							.attr("y", 10)
+							.attr("height", 100)
+							.attr("width", 280)
+							.attr("xlink:href", "imgs/screen.svg");
+
+var screenText = svg.append("text")
+										.attr("id", "res-box")
+										.attr("text-anchor", "end")
+										.attr("x", left_offset + 240)
+										.attr("y", 80)
+										.attr("font-size", "30px")
+										.attr("font-family", "sans-serif")
+										.text(0); 
+
+var buttons = 	svg.selectAll("g")
+									 .data(jsonIcons)
+									 .enter()
+									 .append("g")
+									 .append("svg:image");
+
+
+var val1 = 0;
+var val2 = 0;
+var op = '';
+
+var out = 0;
+
+//state 0 = init, 1 = enter_val1, 2 = enter_val2, 3=output_val
+var state = 0;
+
+var op_visible = false;
+var num_visible = true;
+var eq_visible = false;
+var clear_visible = false;
+
+var fadeout = 0.45;
+
+function updateVisibility() {
+	
+	d3.selectAll("#op")
+		.attr("xlink:href", function() {
+				var img = d3.select(this).attr("img");
+				if (op_visible) 
+				{
+					return "imgs/"+img+".svg";	
+				} else {
+					return "imgs/"+img+"_clear.svg";	
+				}
+		})
+		.style("opacity", function() {
+				if (op_visible) 
+					return 1.0;	
+				 else 
+					return fadeout;	
+		});
+
+	d3.selectAll("#num")
+		.attr("xlink:href", function() {
+				var img = d3.select(this).attr("img");
+				if (num_visible) 
+				{
+					return "imgs/"+img+".svg";	
+				} else {
+					return "imgs/"+img+"_clear.svg";	
+				}
+		})
+		.style("opacity", function() {
+				if (num_visible) 
+					return 1.0;	
+				 else 
+					return fadeout;	
+		});
+
+	d3.selectAll("#clear")
+		.attr("xlink:href", function() {
+				var img = d3.select(this).attr("img");
+				if (clear_visible) 
+				{
+					return "imgs/"+img+".svg";	
+				} else {
+					return "imgs/"+img+"_clear.svg";	
+				}
+		})
+		.style("opacity", function() {
+				if (clear_visible) 
+					return 1.0;	
+				 else 
+					return fadeout;	
+		});
+
+	d3.selectAll("#eq")
+		.attr("xlink:href", function() {
+				var img = d3.select(this).attr("img");
+				if (eq_visible) 
+				{
+					return "imgs/"+img+".svg";	
+				} else {
+					return "imgs/"+img+"_clear.svg";	
+				}
+		})
+		.style("opacity", function() {
+				if (eq_visible) 
+					return 1.0;	
+				 else 
+					return fadeout;	
+		});
+
+}
+
+var buttonAttributes = buttons
+															.attr("xlink:href", function(d) { return 'imgs/'+d.img+'_clear.svg';})
+															.attr("img", function(d) { return d.img;} )
+															.attr("x", function(d) { return left_offset + d.x_axis; })
+															.attr("y", function(d) { return circleGrid_yoffset + d.y_axis; })
+															.attr("width", function(d) { return d.size; })
+															.attr("height", function(d) { return d.size; })
+															.attr("id", function(d) { return d.type; })
+															.on('mouseover', function(d) {
+																		var type = d3.select(this).attr("id");
+																		if (type == 'op' && op_visible) {
+																			d3.select(this)
+																				.attr("xlink:href", 'imgs/'+d.img+'_highlight.svg');
+																		} else if (type == 'num' && num_visible) {
+																			d3.select(this)
+																				.attr("xlink:href", 'imgs/'+d.img+'_highlight.svg');
+																		} else if (type == 'eq' && eq_visible) {
+																			d3.select(this)
+																				.attr("xlink:href", 'imgs/'+d.img+'_highlight.svg');
+																		} else if (type == 'clear' && clear_visible) {
+																			d3.select(this)
+																				.attr("xlink:href", 'imgs/'+d.img+'_highlight.svg');
+																		}
+															})
+															.on("mouseout", function(d) {
+																	updateVisibility();
+															})	
+															.on("click", function(d) {
+																		if(d.type == 'clear') {
+																			//We are in the clear state
+																			state=0;
+																			val1=0;
+																			val2=0;
+																			out=0;
+																			d3.select("#res-box")
+																				.text(0);
+																			
+																			num_visible=true; op_visible=false;
+																			eq_visible=false; clear_visible=false;
+																			updateVisibility();
+
+																		} else {
+																			if(state == 0) {
+																				if(d.type == 'num') {
+																					val1 = Number(val1)*10 + Number(d.value);
+				
+																					var statetext = String(val1);
+																					d3.select("#res-box")
+																						.text(statetext);
+
+																					num_visible=true; op_visible=true;
+																					eq_visible=false; clear_visible=true;
+																					updateVisibility();
+
+																				} else if( d.type == 'op') {
+																					op = d.value;
+																					console.log(op);
+																					state = 1;
+
+																					num_visible=true; op_visible=false;
+																					eq_visible=false; clear_visible=true;
+																					updateVisibility();
+
+																					var statetext = String(val1) +' '+op;
+																					d3.select("#res-box")
+																						.text(statetext);
+
+																				}	
+																			} else if (state == 1) {
+																				if(d.type == 'num') {
+																					console.log(val2);
+																					val2 = Number(val2)*10 + Number(d.value);
+
+																					var statetext = String(val1) +' '+op+' '+String(val2);
+																					d3.select("#res-box")
+																						.text(statetext);
+
+																					num_visible=true; op_visible=false;
+																					eq_visible=true; clear_visible=true;
+																					updateVisibility();
+
+																				} else if( d.type == 'eq') {
+																					if(op == '+') {
+																						out = val1 + val2;
+																					} else if (op == '-') {
+																						out = val1 - val2;
+																					} else if (op == '/') {
+																						out = val1 / val2;	
+																					} else if (op == '*') {
+																						out = val1 * val2;
+																					}
+				
+																					var statetext = String(val1) +' '+op+' '+String(val2)+' = '+String(out);
+																					d3.select("#res-box")
+																						.text(statetext);
+
+																					state = 0;
+																					val1 = out;
+																					out = 0;
+																					val2 = 0;
+
+																					num_visible=false; op_visible=true;
+																					eq_visible=false; clear_visible=true;
+																					updateVisibility();
+																				}	
+
+																			}
+																		}
+																		return;	
+															});
+
+updateVisibility();
+
+
+</script>
+

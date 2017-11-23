@@ -24,8 +24,35 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>Hi Bob! You can use the blue arrow in the bottom right to navigate to the next slide ...</section>
+				<section>You will be able to interact with the content of these slides ...</section>
+				<section>Whenever you see a calculator you should try and click it ...</section>
+				<section>I plan to use these calculators to indicate design strategies which can be used to prevent errors ...</section>
+				<section> Some of these calculators are terrible (by my design), in the lecture I will show how they can be improved. </section>
+				<section>I'm still constructing some __really__ bad calculators. But hopefully the handful in these slides will give you a feel for the lectures content.</section>
+				<section> Okay, let's start </section>
+				<section><b>A somewhat terrible calculator</b></section>
+				<section data-background-iframe="d3-calculator/v1_basicCalc/index.html" data-background-interactive></section>
+				<section>that was awful, did you even realise that you could click it? Let's improve it ...</section>
+				<section><b>A somewhat terrible calculator with buttons that signify pushing</b></section>
+				<section data-background-iframe="d3-calculator/v1_highlightSignifiers/index.html" data-background-interactive></section>
+				<section>that was a bit better. However, all the buttons are the same shape you could easily make a mistake ...</section>
+				<section><b>A somewhat less terrible calculator with different buttons</b></section>
+				<section data-background-iframe="d3-calculator/v1_buttonDifferentiator/index.html" data-background-interactive></section>
+				<section>hmm, if I hit that clear button I loose everything.</section>
+				<section><b>A somewhat less terrible calculator with different buttons and a more obvious clear button</b></section>
+				<section data-background-iframe="d3-calculator/v1_clearButtonModifications/index.html" data-background-interactive></section>
+				<section><b>A somewhat less terrible calculator with different buttons and a more obvious clear button that flashes and alerts when you are going to clear something</b></section>
+				<section data-background-iframe="d3-calculator/v1_clearButtonModifications_redAlert/index.html" data-background-interactive></section>
+				<section>I don't know if you've noticed but this calculator behaves a bit strangely when you are chaining operations together. Try going back and typing 1 + 1 + 2 = ... </section>
+				<section>That's because it expects you to hit = after each operation. 1+1 = 2, +1 = 3... etc.. </section>
+				<section>We can make the calculators operation more obvious by using constraints </section>
+				<section><b> A better calculator where the input options are constrained based on the calculators internal state.</b> </section>
+				<section data-background-iframe="d3-calculator/v2_constrainedCalc_newbuttons/index.html" data-background-interactive></section>
+				<section>What if we get interrupted while using our calculator, we might forget what we have already entered. What if we made the state visible... </section>
+				<section><b> A better calculator where the input options are constrained and the internal state of the calculator is always visible.</b> </section>
+				<section data-background-iframe="d3-calculator/v3_visibleStateCalc_newbuttons/index.html" data-background-interactive></section>
+				<section>The main content for the lecture will be based on Chapter 4/5 of Norman's book. Currently I'm trying to illustrate all hte main points about errors and constraints by developing some truely terrible versions of this calculator. </section>
 			</div>
 		</div>
 
