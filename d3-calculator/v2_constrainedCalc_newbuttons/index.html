@@ -69,6 +69,62 @@ var screenText = svg.append("text")
 										.attr("font-family", "sans-serif")
 										.text(0); 
 
+//-------------RANDOM PROBLEM SECTION-------------------------
+var calculatetext = svg.append("text")
+                       .attr("id", "calculate") 
+                       .attr("x", left_offset + 340)
+                       .attr("y", 125)
+                       .attr("font-size", "40px")
+                       .attr("font-family", "sans-serif")
+                       .text("Calculate: ");
+
+var randProblem_op1 = Math.floor((Math.random() * 900) + 100);
+var randProblem_op2 = Math.floor((Math.random() * 900) + 100);
+
+function randOp() {
+  var opRand = Math.floor((Math.random() * 4));
+  if(opRand == 0)
+    return ' + ';
+  else if(opRand == 1)
+    return ' - ';
+  else if(opRand == 2)
+    return ' * ';
+  else
+    return ' / ' ;
+}
+
+function calculateAnswer(operand1, operand2, op) {
+  if(op == ' + ') {
+    return operand1 + operand2;
+  } else if (op == ' - ') {
+    return operand1 - operand2;
+  } else if (op == ' * ') {
+    return operand1 * operand2;
+  } else if (op == ' / ') {
+    return operand1 / operand2;
+  } else {
+    console.log("Error: op = "+op+" which is not a supported operand type!?");
+    return;
+  }
+}
+
+var randOpText = randOp();
+var correctAnswer = calculateAnswer(randProblem_op1, randProblem_op2, randOpText);
+var randomProblem = svg.append("text")
+                       .attr("id", "problemText") 
+                       .attr("x", left_offset + 360)
+                       .attr("y", 175)
+                       .attr("font-size", "35px")
+                       .attr("font-family", "sans-serif")
+                       .text(String(randProblem_op1) + randOpText + String(randProblem_op2) +' = ?');
+
+var timerRunning = false;
+var tstart = 0;
+var tend = 0;
+
+//---------------------------------------------------------------------------------
+
+
 var buttons = 	svg.selectAll("g")
 									 .data(jsonIcons)
 									 .enter()
@@ -192,6 +248,16 @@ var buttonAttributes = buttons
 																	updateVisibility();
 															})	
 															.on("click", function(d) {
+                                //------------- RANDOM PROBLEM CODE-------------------
+                                    if(!timerRunning){
+                                      timerRunning = true;
+                                      tstart = performance.now();
+                                      d3.select("#problemText").remove();
+                                      d3.select("#calculate").remove();
+                                      d3.select("#answer").remove();
+                                      d3.select("#timer").remove();
+                                    }
+                                //----------------------------------------------------
 																		if(d.type == 'clear') {
 																			//We are in the clear state
 																			state=0;
@@ -248,6 +314,39 @@ var buttonAttributes = buttons
 																					} else if (op == '*') {
 																						out = val1 * val2;
 																					}
+//--------------------- RANDOM QUESTION ANSWER AND PERFORMANCE ------------------------------------
+                                          tend = performance.now();
+                                          timerRunning = false;
+                                          if(out == correctAnswer) {
+                                            svg.append("text")
+                                               .attr("id", "answer") 
+                                               .attr("x", left_offset + 340)
+                                               .attr("y", 125)
+                                               .attr("font-size", "40px")
+                                               .attr("font-family", "sans-serif")
+                                               .attr("fill", "green")
+                                               .text("correct! :)");
+                                            
+                                          } else {
+                                            svg.append("text")
+                                               .attr("id", "answer") 
+                                               .attr("x", left_offset + 340)
+                                               .attr("y", 125)
+                                               .attr("font-size", "40px")
+                                               .attr("font-family", "sans-serif")
+                                               .attr("fill", "red")
+                                               .text("incorrect :(");
+                                          }
+                                            svg.append("text")
+                                               .attr("id", "timer") 
+                                               .attr("x", left_offset + 340)
+                                               .attr("y", 175)
+                                               .attr("font-size", "40px")
+                                               .attr("font-family", "sans-serif")
+                                               .attr("fill", "gray")
+                                               .text("Time = " + parseFloat(tend - tstart).toFixed(2) + " ms");
+//-------------------------------------------------------------------------------------------------
+
 				
 																					d3.select("#res-box")
 																						.text(out);

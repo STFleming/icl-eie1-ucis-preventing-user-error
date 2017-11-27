@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 1.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 0.1px;
+}
+
+</style>
+<svg width="7000" height="4800"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+var jsonIcons = [
+  {"type" : "num", "x_axis": 20, "y_axis": 30, "size":   52, "value" : "7", "img" :    "button7"},
+  {"type" : "num", "x_axis": 80, "y_axis": 30, "size":   52, "value" : "8", "img" :    "button8"},
+  {"type" : "num", "x_axis": 140, "y_axis": 30, "size":  52, "value" : "9", "img" :   "button9"},
+  {"type" : "num", "x_axis": 20, "y_axis": 90, "size":   52, "value" : "4", "img" :    "button4"},
+  {"type" : "num", "x_axis": 80, "y_axis": 90, "size":   52, "value" : "5", "img" :    "button5"},
+  {"type" : "num", "x_axis": 140, "y_axis": 90, "size":  52, "value" : "6", "img" :   "button6"},
+  {"type" : "num", "x_axis": 20, "y_axis": 150, "size":  52, "value" : "1", "img" :   "button1"},
+  {"type" : "num", "x_axis": 80, "y_axis": 150, "size":  52, "value" : "2", "img" :   "button2"},
+  {"type" : "num", "x_axis": 140, "y_axis": 150, "size": 52, "value" : "3", "img" :  "button3"},
+
+  {"type" : "num", "x_axis": 20, "y_axis":  210, "size":  52, "value" : "0", "img" :   "button0" },
+  {"type" : "eq", "x_axis": 80, "y_axis":  210, "size":  52, "value" : "=", "img" :   "buttonEqual"  },
+  {"type" : "clear", "x_axis": 140, "y_axis": 210, "size": 52, "value" : "c", "img" :  "buttonClear" },
+
+  {"type" : "op", "x_axis": 210, "y_axis": 30, "size":  52, "value" : "/", "img" :  "buttonDivide"  },
+  {"type" : "op", "x_axis": 210, "y_axis": 90, "size":  52, "value" : "*", "img" :  "buttonMult" },
+  {"type" : "op", "x_axis": 210, "y_axis": 150, "size": 52, "value" : "-", "img" : "buttonMinus" }, 
+  {"type" : "op", "x_axis": 210, "y_axis": 210, "size": 52, "value" : "+", "img" : "buttonPlus"} ];
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+svg.append("rect")
+   .attr("width", "100%")
+   .attr("height", "100%")
+   .attr("fill", "#FFFFFF");
+
+var circleGrid_yoffset = 100;
+var left_offset = 100;
+
+var rect = svg.append("svg:image")
+							.attr("x", left_offset)
+							.attr("y", 10)
+							.attr("height", 100)
+							.attr("width", 280)
+							.attr("xlink:href", "imgs/screen.svg");
+
+var screenText = svg.append("text")
+										.attr("id", "res-box")
+										.attr("text-anchor", "end")
+										.attr("x", left_offset + 240)
+										.attr("y", 80)
+										.attr("font-size", "50px")
+										.attr("font-family", "sans-serif")
+										.text(0); 
+
+
+
+var buttons = 	svg.selectAll("g")
+									 .data(jsonIcons)
+									 .enter()
+									 .append("g")
+									 .append("svg:image");
+
+
+var val1 = 0;
+var val2 = 0;
+var op = '';
+
+var out = 0;
+
+//state 0 = init, 1 = enter_val1, 2 = enter_val2, 3=output_val
+var state = 0;
+
+var buttonAttributes = buttons
+															.attr("xlink:href", function(d) {return 'imgs/'+d.img+'.svg';})
+															.attr("x", function(d) { return left_offset + d.x_axis; })
+															.attr("y", function(d) { return circleGrid_yoffset + d.y_axis; })
+															.attr("width", function(d) { return d.size; })
+															.attr("height", function(d) { return d.size; })
+															.on('mouseover', function(d) {
+																		d3.select(this)
+																			.attr("xlink:href", 'imgs/'+d.img+'_highlight.svg');
+															})
+															.on("mouseout", function(d) {
+																		d3.select(this)
+																			.attr("xlink:href", 'imgs/'+d.img+'.svg');
+															})	
+															.on("click", function(d) {
+																		if(d.type == 'clear') {
+																			//We are in the clear state
+																			updateStateMachine(0);
+																			state=0;
+																			val1=0;
+																			val2=0;
+																			out=0;
+																			d3.select("#res-box")
+																				.text(0);
+
+																		} else {
+																			if(state == 0) {
+																				if(d.type == 'num') {
+
+																					if(val1 == 0) {
+																						updateStateMachine(1);
+																					} else {
+																						updateStateMachine(2);																						
+																					}
+
+																					console.log(val1);
+																					val1 = Number(val1)*10 + Number(d.value);
+
+																					d3.select("#res-box")
+																						.text(val1);
+
+																				} else if(val1 != 0 && d.type == 'op') {
+																					updateStateMachine(4);																						
+																					op = d.value;
+																					console.log(op);
+																					state = 1;
+																				}	
+																			} else if (state == 1) {
+																				if(d.type == 'num') {
+						
+																					if(val2 == 0) {
+																						updateStateMachine(5);	
+																					} else {
+																						updateStateMachine(6);	
+																					}
+
+																					console.log(val2);
+																					val2 = Number(val2)*10 + Number(d.value);
+
+																					d3.select("#res-box")
+																						.text(val2);
+
+																				} else if( d.type == 'eq') {
+																					updateStateMachine(8);	
+																					console.log(d.type);
+																					if(op == '+') {
+																						out = val1 + val2;
+																					} else if (op == '-') {
+																						out = val1 - val2;
+																					} else if (op == '/') {
+																						out = val1 / val2;	
+																					} else if (op == '*') {
+																						out = val1 * val2;
+																					}
+
+
+																					d3.select("#res-box")
+																						.text(out);
+																					state = 0;
+																					val1 = out;
+																					out = 0;
+																					val2 = 0;
+																				}	
+
+																			}
+																		}
+																		return;	
+															});
+
+//----------------------- State transition diagram ----------------------------------
+
+function state2() {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_2.svg");
+}
+function state3() {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_3.svg");
+}
+function state6() {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_6.svg");
+}
+
+function updateStateMachine(state) {
+
+	if (state == 1) {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_1.svg");
+		setTimeout(state2, 300);
+	} else if (state == 2) {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_3.svg");
+		setTimeout(state2, 300);
+	} else if (state == 5) {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_5.svg");
+		setTimeout(state6, 300);
+	} else if (state == 6) {
+		d3.select("#state").attr("xlink:href", "imgs/stateMachine/stateMachine_7.svg");
+		setTimeout(state6, 300);
+	} else {
+		d3.select("#state")	
+			.attr("xlink:href", function() {
+							return "imgs/stateMachine/stateMachine_" +String(state)+".svg";	
+				});
+	}
+}
+
+var FSM_xoffset = 450;
+var FSM_yoffset = -100;
+
+var stateMachine 
+				 = svg.append("svg:image")
+						  .attr("id", "state")
+              .attr("x", FSM_xoffset)
+              .attr("y", FSM_yoffset)
+              .attr("height", 750)
+              .attr("width", 750)
+              .attr("xlink:href", "imgs/stateMachine/stateMachine_0.svg");
+
+
+//-----------------------------------------------------------------------------------
+
+
+</script>
+
