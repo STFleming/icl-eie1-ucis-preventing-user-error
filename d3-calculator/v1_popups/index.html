@@ -128,7 +128,7 @@ var buttons = 	svg.selectAll("g")
 									 .append("g")
 									 .append("svg:image");
 
-var popup_counter = 0;
+var popup_counter = 999999999;
 //Popups
 setInterval(function() {
 	var x =  Math.floor((Math.random() * 300) + 1);
@@ -198,6 +198,7 @@ var buttonAttributes = buttons
 																			.attr("xlink:href", 'imgs/'+d.img+'.svg');
 															})	
 															.on("click", function(d) {
+																popup_counter = 0;
                                 //------------- RANDOM PROBLEM CODE-------------------
                                     if(!timerRunning){
                                       timerRunning = true;
