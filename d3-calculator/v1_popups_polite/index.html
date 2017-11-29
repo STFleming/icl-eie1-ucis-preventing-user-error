@@ -128,6 +128,7 @@ var buttons = 	svg.selectAll("g")
 									 .append("g")
 									 .append("svg:image");
 
+var popup_max = 1;
 var popup_counter = 0;
 var popup_block = false;
 //Popups
@@ -137,7 +138,7 @@ setInterval(function() {
 	var popup = Math.floor((Math.random() * 6));
 	var id = Math.floor((Math.random()*100000));	
 	
-	if (popup_counter < 5 && !popup_block) {
+	if (popup_counter < popup_max && !popup_block) {
 	svg.append("svg:image")
 		 .attr("id", function() { return "popup_" + String(id); })
 		 .attr("x", x) 
@@ -200,6 +201,7 @@ var buttonAttributes = buttons
 															})	
 															.on("click", function(d) {
 																popup_counter = 0;
+																popup_max = 5;
                                 //------------- RANDOM PROBLEM CODE-------------------
                                     if(!timerRunning){
                                       timerRunning = true;
